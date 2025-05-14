@@ -73,7 +73,7 @@
       const name = row.Name;
       const type = row.Type;
       if (!isNaN(lat) && !isNaN(lon)) {
-        const marker = L.marker([lat, lon]).bindPopup(`<strong>${item.name}</strong><br>${item.merchantid}<br>${item.type}<br>${item.category}`);
+        const marker = L.marker([lat, lon]).bindPopup('<strong>${item.name}</strong><br>${item.merchantid}<br>${item.type}<br>${item.category}');
         marker.type = type;
         allMarkers.push(marker);
       }
