@@ -19,14 +19,18 @@
       background: #f8f8f8;
       border-bottom: 1px solid #ccc;
     }
-    select {
+    select, input[type="text"] {
       margin-right: 10px;
+      padding: 5px;
     }
   </style>
 </head>
 <body>
 
 <div id="controls">
+  <label for="search">Search:</label>
+  <input type="text" id="name-search" placeholder="Search by name...">
+
   <label for="type-filter">Type:</label>
   <select id="type-filter">
     <option value="">All</option>
@@ -84,6 +88,7 @@
         );
         marker.type = type;
         marker.category = category;
+        marker.name = name;
         allMarkers.push(marker);
       }
     });
@@ -115,16 +120,19 @@
 
     typeSelect.addEventListener('change', applyFilters);
     categorySelect.addEventListener('change', applyFilters);
+    document.getElementById('name-search').addEventListener('input', applyFilters);
   }
 
   function applyFilters() {
     const selectedType = document.getElementById('type-filter').value;
     const selectedCategory = document.getElementById('category-filter').value;
+    const searchTerm = document.getElementById('name-search').value.trim().toLowerCase();
 
     const filtered = allData.filter(row => {
       const matchType = selectedType ? row.Type === selectedType : true;
       const matchCategory = selectedCategory ? row.Category === selectedCategory : true;
-      return matchType && matchCategory;
+      const matchSearch = searchTerm ? row.Name.toLowerCase().includes(searchTerm) : true;
+      return matchType && matchCategory && matchSearch;
     });
 
     buildMap(filtered);
