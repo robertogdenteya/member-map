@@ -131,7 +131,7 @@
     const filtered = allData.filter(row => {
       const matchType = selectedType ? row.Type === selectedType : true;
       const matchCategory = selectedCategory ? row.Category === selectedCategory : true;
-      const matchSearch = searchTerm ? row.Name.toLowerCase().includes(searchTerm) : true;
+      const matchSearch = searchTerm ? String(row.Name || '').toLowerCase().includes(searchTerm) : true;
       return matchType && matchCategory && matchSearch;
     });
 
