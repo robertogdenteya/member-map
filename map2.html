@@ -83,9 +83,18 @@
       const category = row.Category;
       const merchantid = row.MerchantID;
       if (!isNaN(lat) && !isNaN(lon)) {
-        const marker = L.marker([lat, lon]).bindPopup(
-          `<strong>${name}</strong><br>${type}<br>${category}<br>${merchantid}`
-        );
+       const customIcon = L.icon({
+  iconUrl: 'https://robertogdenteya.github.io/member-map/logo.png', // update path if needed
+  iconSize: [32, 32], // size of the icon
+  iconAnchor: [16, 32], // point of the icon which will correspond to marker's location
+  popupAnchor: [0, -32] // point from which the popup should open relative to the iconAnchor
+});
+
+const marker = L.marker([lat, lon], { icon: customIcon }).bindPopup(
+  `<strong>${name}</strong><br>${type}<br>${category}<br>${merchantid}`
+);
+        
+       
         marker.type = type;
         marker.category = category;
         marker.name = name;
