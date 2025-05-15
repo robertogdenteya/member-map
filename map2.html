@@ -1,144 +1,133 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Teya Merchant Map</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <!-- MarkerCluster CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
-
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-o9N1j7kC5YkD1fzyy2iUUpf2Tn2G1xgZh2F3Z8bVxYQ="
+    crossorigin=""
+  />
   <style>
-    body { margin: 0; font-family: sans-serif; }
-    #map { height: 90vh; width: 100%; }
-    #controls {
+    #map {
+      height: 90vh;
+      width: 100%;
+    }
+    #filters {
       padding: 10px;
-      background: #f8f8f8;
-      border-bottom: 1px solid #ccc;
+      background: #f9f9f9;
+      display: flex;
+      gap: 10px;
+    }
+    select {
+      padding: 5px;
     }
   </style>
 </head>
 <body>
+  <div id="filters">
+    <label for="type-filter">Type:</label>
+    <select id="type-filter">
+      <option value="">All</option>
+    </select>
 
-<div id="controls">
- <!-- <input type="file" id="csv-file" accept=".csv" /> -->
- <!-- <label for="filter">Merchant Type:</label>
-  <select id="type-filter">
-    <option value="">All</option>
-  </select> -->
-  <div style="padding: 10px;">
-  <label for="type-filter">Filter by Type:</label>
-  <select id="type-filter">
-    <option value="">All Types</option>
-  </select>
-
-  <label for="subtype-filter" style="margin-left: 20px;">Filter by Sub-Type:</label>
-  <select id="subtype-filter">
-    <option value="">All Sub-Types</option>
-  </select>
+    <label for="subtype-filter">Category:</label>
+    <select id="subtype-filter">
+      <option value="">All</option>
+    </select>
   </div>
-</div>
 
-<div id="map"></div>
+  <div id="map"></div>
 
-<!-- Libraries -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o1U+gk7Vjf36eqCkxrB3fGZktDkFd5KfprzLMkU3E1E="
+    crossorigin="">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    let map = L.map('map').setView([54.5, -3], 6);
 
-<script>
-  let allData = [];
-  let markers = [];
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
-  const map = L.map('map').setView([54.5, -3], 6.5);
+    let markers = [];
+    let allData = [];
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors',
-    maxZoom: 18,
-  }).addTo(map);
+    function buildMap(data) {
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
 
-  function buildMap(data) {
-    // Clear existing markers
-    markers.forEach(marker => map.removeLayer(marker));
-    markers = [];
+      data.forEach(item => {
+        if (!item.Latitude || !item.Longitude) return;
 
-    data.forEach(item => {
-      if (item.Latitude && item.Longitude) {
-        const marker = L.marker([parseFloat(item.Latitude), parseFloat(item.Longitude)]);
-        marker.bindPopup(`<strong>${item.Name}</strong><br>${item.Type} - ${item.Category}<br>${item.MerchantID}`);
-        marker.addTo(map);
+        const marker = L.marker([item.Latitude, item.Longitude]).addTo(map);
+        marker.bindPopup(`<strong>${item.Name}</strong><br>${item.Type} - ${item.Category}`);
         markers.push(marker);
+      });
+    }
+
+    function populateFilterOptions(data) {
+      const typeSelect = document.getElementById('type-filter');
+      const subTypeSelect = document.getElementById('subtype-filter');
+
+      const types = [...new Set(data.map(d => d.Type).filter(Boolean))];
+      const subTypes = [...new Set(data.map(d => d.Category).filter(Boolean))];
+
+      types.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        typeSelect.appendChild(option);
+      });
+
+      subTypes.forEach(sub => {
+        const option = document.createElement('option');
+        option.value = sub;
+        option.textContent = sub;
+        subTypeSelect.appendChild(option);
+      });
+    }
+
+    function applyFilters() {
+      const typeValue = document.getElementById('type-filter').value;
+      const subTypeValue = document.getElementById('subtype-filter').value;
+
+      if (!typeValue && !subTypeValue) {
+        buildMap(allData);
+        return;
+      }
+
+      const filteredData = allData.filter(item => {
+        return (!typeValue || item.Type === typeValue) &&
+               (!subTypeValue || item.Category === subTypeValue);
+      });
+
+      buildMap(filteredData);
+    }
+
+    document.getElementById('type-filter').addEventListener('change', applyFilters);
+    document.getElementById('subtype-filter').addEventListener('change', applyFilters);
+
+    // Load the CSV from GitHub Pages
+    Papa.parse('https://robertogdenteya.github.io/member-map/TeyaMapTest.csv', {
+      download: true,
+      header: true,
+      dynamicTyping: true,
+      skipEmptyLines: true,
+      worker: true,
+      complete: function (results) {
+        allData = results.data;
+        console.log("Total records loaded:", allData.length);
+        buildMap(allData);
+        populateFilterOptions(allData);
+      },
+      error: function (err) {
+        console.error("Error loading CSV:", err);
       }
     });
-  }
-
-  function populateFilterOptions(data) {
-    const typeFilter = document.getElementById('type-filter');
-    const subTypeFilter = document.getElementById('subtype-filter');
-
-    const types = [...new Set(data.map(d => d.Type).filter(Boolean))].sort();
-    const subTypes = [...new Set(data.map(d => d.Category).filter(Boolean))];
-
-    // Populate Type dropdown
-    typeFilter.innerHTML = '<option value="">All Types</option>';
-    types.forEach(type => {
-      const option = document.createElement('option');
-      option.value = type;
-      option.textContent = type;
-      typeFilter.appendChild(option);
-    });
-
-    // Populate SubType dropdown
-    subTypeFilter.innerHTML = '<option value="">All Sub-Types</option>';
-    subTypes.forEach(category => {
-      const option = document.createElement('option');
-      option.value = category;
-      option.textContent = category;
-      subTypeFilter.appendChild(option);
-    });
-  }
-
-  function applyFilters() {
-  const typeValue = document.getElementById('type-filter').value;
-  const subTypeValue = document.getElementById('subtype-filter').value;
-
-  // Show all records if no filters are selected
-  if (!typeValue && !subTypeValue) {
-    buildMap(allData);
-    return;
-  }
-
-  const filteredData = allData.filter(item => {
-    return (!typeValue || item.Type === typeValue) &&
-           (!subTypeValue || item.Category === subTypeValue);
-  });
-  console.log("Filtered rows:", filteredData.length);
-  buildMap(filteredData);
-}
-
-  // Load CSV from GitHub automatically
-  Papa.parse('https://robertogdenteya.github.io/member-map/TeyaMapTest.csv', {
-    download: true,
-    header: true,
-    dynamicTyping: true,
-    skipEmptyLines: true,
-    complete: function (results) {
-      allData = results.data;
-      populateFilterOptions(allData);
-      buildMap(allData);
-    }
-  });
-
-  // Event listeners
-  document.getElementById('type-filter').addEventListener('change', applyFilters);
-  document.getElementById('subtype-filter').addEventListener('change', applyFilters);
-</script>
-
-
-
-
+  </script>
 </body>
 </html>
