@@ -71,8 +71,10 @@
       const lon = parseFloat(row.Longitude);
       const name = row.Name;
       const type = row.Type;
+      const category = row.Category;
+      const merchantid = row.MerchantID;
       if (!isNaN(lat) && !isNaN(lon)) {
-        const marker = L.marker([lat, lon]).bindPopup(`<strong>${name}</strong><br>${type}`);
+        const marker = L.marker([lat, lon]).bindPopup(`<strong>${name}</strong><br>${type}<br>${category}<br>${merchantid}`);
         marker.type = type;
         allMarkers.push(marker);
       }
