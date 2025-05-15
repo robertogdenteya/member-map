@@ -80,7 +80,7 @@
     const subTypeFilter = document.getElementById('subtype-filter');
 
     const types = [...new Set(data.map(d => d.Type).filter(Boolean))].sort();
-    const subTypes = [...new Set(data.map(d => d.Category).filter(Boolean))].sort();
+    const subTypes = [...new Set(data.map(d => d.Category).filter(Boolean))];
 
     // Populate Type dropdown
     typeFilter.innerHTML = '<option value="">All Types</option>';
@@ -102,16 +102,22 @@
   }
 
   function applyFilters() {
-    const typeValue = document.getElementById('type-filter').value;
-    const subTypeValue = document.getElementById('subtype-filter').value;
+  const typeValue = document.getElementById('type-filter').value;
+  const subTypeValue = document.getElementById('subtype-filter').value;
 
-    const filteredData = allData.filter(item => {
-      return (!typeValue || item.Type === typeValue) &&
-             (!subTypeValue || item.Category === subTypeValue);
-    });
-
-    buildMap(filteredData);
+  // Show all records if no filters are selected
+  if (!typeValue && !subTypeValue) {
+    buildMap(allData);
+    return;
   }
+
+  const filteredData = allData.filter(item => {
+    return (!typeValue || item.Type === typeValue) &&
+           (!subTypeValue || item.Category === subTypeValue);
+  });
+
+  buildMap(filteredData);
+}
 
   // Load CSV from GitHub automatically
   Papa.parse('https://robertogdenteya.github.io/member-map/TeyaMapTest.csv', {
