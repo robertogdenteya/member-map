@@ -19,14 +19,21 @@
       background: #f8f8f8;
       border-bottom: 1px solid #ccc;
     }
+    select {
+      margin-right: 10px;
+    }
   </style>
 </head>
 <body>
 
 <div id="controls">
-  
-  <label for="filter">Merchant Type:</label>
+  <label for="type-filter">Type:</label>
   <select id="type-filter">
+    <option value="">All</option>
+  </select>
+
+  <label for="category-filter">Category:</label>
+  <select id="category-filter">
     <option value="">All</option>
   </select>
 </div>
@@ -47,19 +54,18 @@
   const markerCluster = L.markerClusterGroup();
   let allData = [];
   let allMarkers = [];
-  let typeSet = new Set();
 
   Papa.parse('https://robertogdenteya.github.io/member-map/TeyaMapTest.csv', {
-  download: true,
-  header: true,
-  dynamicTyping: true,
-  skipEmptyLines: true,
-  complete: function (results) {
-    allData = results.data;
-    buildMap(allData);
-    populateFilterOptions(allData);
-  }
-});
+    download: true,
+    header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true,
+    complete: function (results) {
+      allData = results.data;
+      buildMap(allData);
+      populateFilterOptions(allData);
+    }
+  });
 
   function buildMap(data) {
     markerCluster.clearLayers();
@@ -73,8 +79,11 @@
       const category = row.Category;
       const merchantid = row.MerchantID;
       if (!isNaN(lat) && !isNaN(lon)) {
-        const marker = L.marker([lat, lon]).bindPopup(`<strong>${name}</strong><br>${type}<br>${category}<br>${merchantid}`);
+        const marker = L.marker([lat, lon]).bindPopup(
+          `<strong>${name}</strong><br>${type}<br>${category}<br>${merchantid}`
+        );
         marker.type = type;
+        marker.category = category;
         allMarkers.push(marker);
       }
     });
@@ -84,21 +93,41 @@
   }
 
   function populateFilterOptions(data) {
-    const select = document.getElementById('type-filter');
-    const uniqueTypes = Array.from(new Set(data.map(row => row.Category))).sort();
+    const typeSelect = document.getElementById('type-filter');
+    const categorySelect = document.getElementById('category-filter');
 
-    uniqueTypes.forEach(category => {
+    const uniqueTypes = Array.from(new Set(data.map(row => row.Type))).sort();
+    const uniqueCategories = Array.from(new Set(data.map(row => row.Category))).sort();
+
+    uniqueTypes.forEach(type => {
+      const opt = document.createElement('option');
+      opt.value = type;
+      opt.textContent = type;
+      typeSelect.appendChild(opt);
+    });
+
+    uniqueCategories.forEach(category => {
       const opt = document.createElement('option');
       opt.value = category;
       opt.textContent = category;
-      select.appendChild(opt);
+      categorySelect.appendChild(opt);
     });
 
-    select.addEventListener('change', function () {
-      const selected = this.value;
-      const filtered = selected ? allData.filter(row => row.Category === selected) : allData;
-      buildMap(filtered);
+    typeSelect.addEventListener('change', applyFilters);
+    categorySelect.addEventListener('change', applyFilters);
+  }
+
+  function applyFilters() {
+    const selectedType = document.getElementById('type-filter').value;
+    const selectedCategory = document.getElementById('category-filter').value;
+
+    const filtered = allData.filter(row => {
+      const matchType = selectedType ? row.Type === selectedType : true;
+      const matchCategory = selectedCategory ? row.Category === selectedCategory : true;
+      return matchType && matchCategory;
     });
+
+    buildMap(filtered);
   }
 </script>
 
