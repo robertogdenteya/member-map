@@ -115,7 +115,7 @@
     return (!typeValue || item.Type === typeValue) &&
            (!subTypeValue || item.Category === subTypeValue);
   });
-
+  console.log("Filtered rows:", filteredData.length);
   buildMap(filteredData);
 }
 
