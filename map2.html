@@ -24,11 +24,22 @@
 <body>
 
 <div id="controls">
-  <input type="file" id="csv-file" accept=".csv" />
-  <label for="filter">Merchant Type:</label>
+ <!-- <input type="file" id="csv-file" accept=".csv" /> -->
+ <!-- <label for="filter">Merchant Type:</label>
   <select id="type-filter">
     <option value="">All</option>
+  </select> -->
+  <div style="padding: 10px;">
+  <label for="type-filter">Filter by Type:</label>
+  <select id="type-filter">
+    <option value="">All Types</option>
   </select>
+
+  <label for="subtype-filter" style="margin-left: 20px;">Filter by Sub-Type:</label>
+  <select id="subtype-filter">
+    <option value="">All Sub-Types</option>
+  </select>
+  </div>
 </div>
 
 <div id="map"></div>
@@ -39,68 +50,89 @@
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <script>
-  let map = L.map('map').setView([54.5, -3], 6); // UK center
+  let allData = [];
+  let markers = [];
+
+  const map = L.map('map').setView([54.5, -3], 6.5);
+
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 18,
   }).addTo(map);
 
-  const markerCluster = L.markerClusterGroup();
-  let allData = [];
-  let allMarkers = [];
-  let typeSet = new Set();
-
-  Papa.parse('https://robertogdenteya.github.io/member-map/TeyaMapTest.csv', {
-  download: true,
-  header: true,
-  dynamicTyping: true,
-  skipEmptyLines: true,
-  complete: function (results) {
-    allData = results.data;
-    buildMap(allData);
-    populateFilterOptions(allData);
-  }
-});
-
   function buildMap(data) {
-    markerCluster.clearLayers();
-    allMarkers = [];
+    // Clear existing markers
+    markers.forEach(marker => map.removeLayer(marker));
+    markers = [];
 
-    data.forEach(row => {
-      const lat = parseFloat(row.Latitude);
-      const lon = parseFloat(row.Longitude);
-      const name = row.Name;
-      const type = row.Type;
-      const category = row.Category;
-      const merchantid = row.MerchantID;
-      if (!isNaN(lat) && !isNaN(lon)) {
-        const marker = L.marker([lat, lon]).bindPopup(`<strong>${name}</strong><br>${type}<br>${category}<br>${merchantid}`);
-        marker.type = type;
-        allMarkers.push(marker);
+    data.forEach(item => {
+      if (item.Latitude && item.Longitude) {
+        const marker = L.marker([parseFloat(item.Latitude), parseFloat(item.Longitude)]);
+        marker.bindPopup(`<strong>${item.Name}</strong><br>${item.Type} - ${item.SubType}`);
+        marker.addTo(map);
+        markers.push(marker);
       }
     });
-
-    allMarkers.forEach(m => markerCluster.addLayer(m));
-    map.addLayer(markerCluster);
   }
 
   function populateFilterOptions(data) {
-    const select = document.getElementById('type-filter');
-    const uniqueTypes = Array.from(new Set(data.map(row => row.Category))).sort();
+    const typeFilter = document.getElementById('type-filter');
+    const subTypeFilter = document.getElementById('subtype-filter');
 
-    uniqueTypes.forEach(category => {
-      const opt = document.createElement('option');
-      opt.value = category;
-      opt.textContent = category;
-      select.appendChild(opt);
+    const types = [...new Set(data.map(d => d.Type).filter(Boolean))].sort();
+    const subTypes = [...new Set(data.map(d => d.SubType).filter(Boolean))].sort();
+
+    // Populate Type dropdown
+    typeFilter.innerHTML = '<option value="">All Types</option>';
+    types.forEach(type => {
+      const option = document.createElement('option');
+      option.value = type;
+      option.textContent = type;
+      typeFilter.appendChild(option);
     });
 
-    select.addEventListener('change', function () {
-      const selected = this.value;
-      const filtered = selected ? allData.filter(row => row.Category === selected) : allData;
-      buildMap(filtered);
+    // Populate SubType dropdown
+    subTypeFilter.innerHTML = '<option value="">All Sub-Types</option>';
+    subTypes.forEach(Category => {
+      const option = document.createElement('option');
+      option.value = Category;
+      option.textContent = Category;
+      subTypeFilter.appendChild(option);
     });
   }
+
+  function applyFilters() {
+    const typeValue = document.getElementById('type-filter').value;
+    const subTypeValue = document.getElementById('subtype-filter').value;
+
+    const filteredData = allData.filter(item => {
+      return (!typeValue || item.Type === typeValue) &&
+             (!subTypeValue || item.Category === subTypeValue);
+    });
+
+    buildMap(filteredData);
+  }
+
+  // Load CSV from GitHub automatically
+  Papa.parse('https://robertogdenteya.github.io/member-map/TeyaMapTest.csv', {
+    download: true,
+    header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true,
+    complete: function (results) {
+      allData = results.data;
+      populateFilterOptions(allData);
+      buildMap(allData);
+    }
+  });
+
+  // Event listeners
+  document.getElementById('type-filter').addEventListener('change', applyFilters);
+  document.getElementById('subtype-filter').addEventListener('change', applyFilters);
 </script>
+
+
+
 
 </body>
 </html>
