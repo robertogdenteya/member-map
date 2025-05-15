@@ -1,131 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
   <title>Teya Merchant Map</title>
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-o9N1j7kC5YkD1fzyy2iUUpf2Tn2G1xgZh2F3Z8bVxYQ="
-    crossorigin=""
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
   <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: sans-serif;
+    }
     #map {
-      height: 90vh;
+      height: 100vh;
       width: 100%;
-    }
-    #filters {
-      padding: 10px;
-      background: #f9f9f9;
-      display: flex;
-      gap: 10px;
-    }
-    select {
-      padding: 5px;
     }
   </style>
 </head>
 <body>
-  <div id="filters">
-    <label for="type-filter">Type:</label>
-    <select id="type-filter">
-      <option value="">All</option>
-    </select>
-
-    <label for="subtype-filter">Category:</label>
-    <select id="subtype-filter">
-      <option value="">All</option>
-    </select>
-  </div>
 
   <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-o1U+gk7Vjf36eqCkxrB3fGZktDkFd5KfprzLMkU3E1E="
-    crossorigin="">
-  </script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- PapaParse CSV Parser -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
   <script>
-    let map = L.map('map').setView([54.5, -3], 6);
+    const map = L.map('map').setView([54.5, -3], 6.5); // Center over UK
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 18,
     }).addTo(map);
 
-    let markers = [];
-    let allData = [];
+Papa.parse('https://robertogdenteya.github.io/member-map/TeyaMapTest.csv', {
+  download: true,
+  header: true,
+  dynamicTyping: true,
+  skipEmptyLines: true,
+  complete: function (results) {
+    allData = results.data;
+    buildMap(allData);
+    populateFilterOptions(allData);
+  }
+});
+    
 
-    function buildMap(data) {
-      markers.forEach(m => map.removeLayer(m));
-      markers = [];
-
-      data.forEach(item => {
-        if (!item.Latitude || !item.Longitude) return;
-
-        const marker = L.marker([item.Latitude, item.Longitude]).addTo(map);
-        marker.bindPopup(`<strong>${item.Name}</strong><br>${item.Type} - ${item.Category}`);
-        markers.push(marker);
-      });
-    }
-
-    function populateFilterOptions(data) {
-      const typeSelect = document.getElementById('type-filter');
-      const subTypeSelect = document.getElementById('subtype-filter');
-
-      const types = [...new Set(data.map(d => d.Type).filter(Boolean))];
-      const subTypes = [...new Set(data.map(d => d.Category).filter(Boolean))];
-
-      types.forEach(type => {
-        const option = document.createElement('option');
-        option.value = type;
-        option.textContent = type;
-        typeSelect.appendChild(option);
-      });
-
-      subTypes.forEach(sub => {
-        const option = document.createElement('option');
-        option.value = sub;
-        option.textContent = sub;
-        subTypeSelect.appendChild(option);
-      });
-    }
-
-    function applyFilters() {
-      const typeValue = document.getElementById('type-filter').value;
-      const subTypeValue = document.getElementById('subtype-filter').value;
-
-      if (!typeValue && !subTypeValue) {
-        buildMap(allData);
-        return;
-      }
-
-      const filteredData = allData.filter(item => {
-        return (!typeValue || item.Type === typeValue) &&
-               (!subTypeValue || item.Category === subTypeValue);
-      });
-
-      buildMap(filteredData);
-    }
-
-    document.getElementById('type-filter').addEventListener('change', applyFilters);
-    document.getElementById('subtype-filter').addEventListener('change', applyFilters);
-
-    // Load the CSV from GitHub Pages
-    Papa.parse('https://robertogdenteya.github.io/member-map/TeyaMapTest.csv', {
-      download: true,
-      header: true,
-      dynamicTyping: true,
-      skipEmptyLines: true,
-      worker: true,
-      complete: function (results) {
-        allData = results.data;
-        console.log("Total records loaded:", allData.length);
-        buildMap(allData);
-        populateFilterOptions(allData);
-      },
-      error: function (err) {
-        console.error("Error loading CSV:", err);
       }
     });
   </script>
