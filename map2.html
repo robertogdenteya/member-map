@@ -80,7 +80,7 @@
     const subTypeFilter = document.getElementById('subtype-filter');
 
     const types = [...new Set(data.map(d => d.Type).filter(Boolean))].sort();
-    const subTypes = [...new Set(data.map(d => d.SubType).filter(Boolean))].sort();
+    const subTypes = [...new Set(data.map(d => d.Category).filter(Boolean))].sort();
 
     // Populate Type dropdown
     typeFilter.innerHTML = '<option value="">All Types</option>';
@@ -93,10 +93,10 @@
 
     // Populate SubType dropdown
     subTypeFilter.innerHTML = '<option value="">All Sub-Types</option>';
-    subTypes.forEach(Category => {
+    subTypes.forEach(category => {
       const option = document.createElement('option');
-      option.value = Category;
-      option.textContent = Category;
+      option.value = category;
+      option.textContent = category;
       subTypeFilter.appendChild(option);
     });
   }
