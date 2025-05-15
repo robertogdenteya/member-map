@@ -85,18 +85,18 @@
 
   function populateFilterOptions(data) {
     const select = document.getElementById('type-filter');
-    const uniqueTypes = Array.from(new Set(data.map(row => row.Type))).sort();
+    const uniqueTypes = Array.from(new Set(data.map(row => row.Category))).sort();
 
     uniqueTypes.forEach(type => {
       const opt = document.createElement('option');
-      opt.value = type;
-      opt.textContent = type;
+      opt.value = category;
+      opt.textContent = category;
       select.appendChild(opt);
     });
 
     select.addEventListener('change', function () {
       const selected = this.value;
-      const filtered = selected ? allData.filter(row => row.Type === selected) : allData;
+      const filtered = selected ? allData.filter(row => row.Category === selected) : allData;
       buildMap(filtered);
     });
   }
