@@ -68,7 +68,7 @@
     data.forEach(item => {
       if (item.Latitude && item.Longitude) {
         const marker = L.marker([parseFloat(item.Latitude), parseFloat(item.Longitude)]);
-        marker.bindPopup(`<strong>${item.Name}</strong><br>${item.Type} - ${item.SubType}`);
+        marker.bindPopup(`<strong>${item.Name}</strong><br>${item.Type} - ${item.Category}<br>${item.MerchantID}`);
         marker.addTo(map);
         markers.push(marker);
       }
