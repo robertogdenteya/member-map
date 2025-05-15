@@ -87,7 +87,7 @@
     const select = document.getElementById('type-filter');
     const uniqueTypes = Array.from(new Set(data.map(row => row.Category))).sort();
 
-    uniqueTypes.forEach(type => {
+    uniqueTypes.forEach(category => {
       const opt = document.createElement('option');
       opt.value = category;
       opt.textContent = category;
