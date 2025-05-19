@@ -96,7 +96,7 @@ document.getElementById('csv-file').addEventListener('change', function (e) {
       const name = row.Name;
       const type = row.Type;
       const category = row.Category;
-      const merchantid = row.MerchantID;
+      const postcode = row.Postcode;
       if (!isNaN(lat) && !isNaN(lon)) {
        const customIcon = L.icon({
   iconUrl: 'https://robertogdenteya.github.io/member-map/teya-icon.png', // update path if needed
@@ -106,7 +106,7 @@ document.getElementById('csv-file').addEventListener('change', function (e) {
 });
 
 const marker = L.marker([lat, lon], { icon: customIcon }).bindPopup(
-  `<strong>${name}</strong><br>${type}<br>${category}<br>${merchantid}`
+  `<strong>${name}</strong><br>${type}<br>${category}<br>${postcode}`
 );
         
        
