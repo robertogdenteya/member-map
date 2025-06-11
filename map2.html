@@ -60,31 +60,32 @@
   let allData = [];
   let allMarkers = [];
 
-//  Automated map upload - file location must be same as this html file
-//  Papa.parse('https://filelocation/TeyaMapTest.csv', {
-//    download: true,
-//    header: true,
-//    dynamicTyping: true,
-//    skipEmptyLines: true,
-//    complete: function (results) {
-//      allData = results.data;
-//      buildMap(allData);
- //     populateFilterOptions(allData);
-//    }
-//  });
-
-document.getElementById('csv-file').addEventListener('change', function (e) {
-    Papa.parse(e.target.files[0], {
-      header: true,
-      dynamicTyping: true,
-       skipEmptyLines: true,
-      complete: function (results) {
-       allData = results.data;
-       buildMap(allData);
-        populateFilterOptions(allData);
-      }
-   });
+  Automated map upload - file location must be same as this html file
+  Papa.parse('https://filelocation/TeyaMapTest.csv', {
+    download: true,
+   header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true,
+    complete: function (results) {
+      allData = results.data;
+      buildMap(allData);
+      populateFilterOptions(allData);
+    }
   });
+
+  //manual map upload
+//document.getElementById('csv-file').addEventListener('change', function (e) {
+ //   Papa.parse(e.target.files[0], {
+ //     header: true,
+ //     dynamicTyping: true,
+ //      skipEmptyLines: true,
+ //     complete: function (results) {
+ //      allData = results.data;
+ //      buildMap(allData);
+ //       populateFilterOptions(allData);
+ //     }
+ //  });
+ // });
 
   function buildMap(data) {
     markerCluster.clearLayers();
