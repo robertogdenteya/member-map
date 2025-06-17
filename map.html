@@ -126,8 +126,8 @@ const marker = L.marker([lat, lon], { icon: customIcon }).bindPopup(
     const typeSelect = document.getElementById('type-filter');
     const categorySelect = document.getElementById('category-filter');
 
-    const uniqueTypes = Array.from(new Set(data.map(row => row.Type))).sort();
-    const uniqueCategories = Array.from(new Set(data.map(row => row.Category))).sort();
+    const uniqueTypes = Array.from(new Set(data.map(row => row.Team))).sort();
+    const uniqueCategories = Array.from(new Set(data.map(row => row.Stage))).sort();
 
     uniqueTypes.forEach(type => {
       const opt = document.createElement('option');
@@ -154,8 +154,8 @@ const marker = L.marker([lat, lon], { icon: customIcon }).bindPopup(
     const searchTerm = document.getElementById('name-search').value.trim().toLowerCase();
 
     const filtered = allData.filter(row => {
-      const matchType = selectedType ? row.Type === selectedType : true;
-      const matchCategory = selectedCategory ? row.Category === selectedCategory : true;
+      const matchType = selectedType ? row.Team === selectedType : true;
+      const matchCategory = selectedCategory ? row.Stage === selectedCategory : true;
       const matchSearch = searchTerm ? String(row.Name || '').toLowerCase().includes(searchTerm) : true;
       return matchType && matchCategory && matchSearch;
     });
